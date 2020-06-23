@@ -64,6 +64,16 @@ describe Grape::Validations::DefaultValidator do
         end
 
         params do
+          optional :with_default, default: 'default outside hash'
+          optional :hash, type: Hash do
+            optional :with_default, default: 'default inside hash'
+          end
+        end
+        get '/hash' do
+          params
+        end
+
+        params do
           requires :root, type: Hash do
             optional :some_things, type: Array do
               requires :foo
@@ -181,6 +191,17 @@ describe Grape::Validations::DefaultValidator do
     get('/array?array[][name]=name&array[][name]=name2&array[][with_default]=bar2')
     expect(last_response.status).to eq(200)
     expect(last_response.body).to eq({ array: [{ name: 'name', with_default: 'default' }, { name: 'name2', with_default: 'bar2' }] }.to_json)
+  end
+
+  it 'sets default values for nested params' do
+    get('/hash')
+    expect(last_response.status).to eq(200)
+    expect(last_response.body).to eq({
+      with_default: 'default outside hash',
+      hash: {
+        with_default: 'default inside hash'
+      }
+    })
   end
 
   context 'optional group with defaults' do
