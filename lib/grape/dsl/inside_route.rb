@@ -99,12 +99,14 @@ module Grape
         end
 
         def should_be_empty_hash?(passed_children_params, params_nested_path)
-          passed_children_params.empty? && declared_param_is_hash?(params_nested_path)
+          passed_children_params.empty? && declared_param_is_empty_hash?(params_nested_path)
         end
 
-        def declared_param_is_hash?(params_nested_path)
+        def declared_param_is_empty_hash?(params_nested_path)
           key = route_options_params_key(params_nested_path)
-          route_options_params[key] && route_options_params[key][:type] == 'Hash'
+          has_children = route_options_params.keys.any? { |k| k != key && k.start_with?(key) }
+
+          route_options_params[key] && route_options_params[key][:type] == 'Hash' && !has_children
         end
 
         def route_options_params
